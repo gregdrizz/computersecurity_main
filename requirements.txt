@@ -1,0 +1,5 @@
+django-password-history==1.0.4
+Django==3.2.9
+django-filter==21.1
+pyzmq==22.1.0
+django-sslserver==0.22
