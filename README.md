@@ -10,7 +10,7 @@ Aviv Aharon
 Tomer Berkovich
 Asaf Elazar
 
-## How to install?
+## How to run it?
 
 1. Clone the GitHub repository to your local machine (or choose the tag you will to download)
 
