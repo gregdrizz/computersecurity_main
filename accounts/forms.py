@@ -1,6 +1,7 @@
 from django.forms import ModelForm, ValidationError
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
 from .models import *
 
 class OrderForm(ModelForm):
@@ -24,6 +25,7 @@ class CreateUserForm(UserCreationForm):
         if User.objects.filter(email=email).exists():
             raise ValidationError("A user with this email already exists!")
         return email
+
 
 class ChangePasswordForm(UserCreationForm):
     class Meta:
