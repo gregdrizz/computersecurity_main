@@ -49,7 +49,7 @@ Use `example@gmail.com</td><script>alert("You've been hacked")</script><td>` in 
 ### SQL injection
 - http://127.0.0.1:8000/ and any other view, the vulnerable field is the 'Customer Search' bar, use '%'#' in the search bar to inject
 
-## STRIDE Analysis
+## Some Features
 
 You can find all the vulnerabilites in the attached PDF file on the root dir
 
@@ -62,6 +62,8 @@ You can find all the vulnerabilites in the attached PDF file on the root dir
 **Change Password** - Users can change their password 
 
 **TLS protected**- The app can be used using TLS 1.3(The certificate was generated using mkcert)
+
+## STRIDE Analysis
 
 **XSS Vulenrability**- We made the some fields vulnerable to the XSS attack vector
 
