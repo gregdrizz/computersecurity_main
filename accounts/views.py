@@ -24,7 +24,7 @@ import mysql.connector
 from django.utils.crypto import pbkdf2
 
 # Change this in order to protect / enrisk the website
-secured = False
+secured = True
 
 #################################
 
@@ -205,7 +205,7 @@ def home(request):
                 iterable = cursor.execute(sql, multi=True)
                 for result in iterable:
                     currentResults = result.fetchall()
-                    
+
                     for currentResult in currentResults:
                         currentCustomer = DummyCustomer()
 
@@ -217,8 +217,6 @@ def home(request):
                         currentCustomer.creator_id = currentResult[5]
 
                         customers.append(currentCustomer)
-
-                    
 
             except Exception as e:
                 print(e)
