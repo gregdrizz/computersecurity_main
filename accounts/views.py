@@ -189,9 +189,9 @@ def home(request):
         customers = Customer.objects.filter(creator_id = request.user.id)
     else:
         current_user = request.user
-
-        if secured == False: 
+        if secured == False:
             if patternToSearch != None:
+
                 # To exploit this input field, enter "%'#" in the search bar (without the quotes)
                 sql = f"SELECT * FROM accounts_customer WHERE name LIKE '%{patternToSearch}%' AND creator_id = {current_user.id};"
 
@@ -203,22 +203,22 @@ def home(request):
 
                 # Allows multi query, this way we can use UNION in our SQL Injection
                 iterable = cursor.execute(sql, multi=True)
-                iterable = cursor.fetchall()
                 for result in iterable:
-                    # currentResult = result.fetchall()
-                    currentResult = result
+                    currentResults = result.fetchall()
+                    
+                    for currentResult in currentResults:
+                        currentCustomer = DummyCustomer()
 
-                    # currentCustomer = Customer()
-                    currentCustomer = DummyCustomer()
+                        currentCustomer.id    = currentResult[0]
+                        currentCustomer.name  = currentResult[1]
+                        currentCustomer.phone = currentResult[2]
+                        currentCustomer.email = currentResult[3]
+                        currentCustomer.date_created = currentResult[4]
+                        currentCustomer.creator_id = currentResult[5]
 
-                    currentCustomer.id    = currentResult[0]
-                    currentCustomer.name  = currentResult[1]
-                    currentCustomer.phone = currentResult[2]
-                    currentCustomer.email = currentResult[3]
-                    currentCustomer.date_created = currentResult[4]
-                    currentCustomer.creator_id = currentResult[5]
+                        customers.append(currentCustomer)
 
-                    customers.append(currentCustomer)
+                    
 
             except Exception as e:
                 print(e)
