@@ -7,7 +7,7 @@ Users can add customers(and see only the customers they added), add orders of "N
 By: 
 Greg Alelov,
 Aviv Aharon,
-Tomer Berkovich,
+Tomer Berkovich and
 Asaf Elazar
 
 ## How to run it?
