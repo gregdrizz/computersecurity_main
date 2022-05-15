@@ -5,9 +5,9 @@ This project is a dummy telecommunication site that is vulnerable to SQL injecti
 Users can add customers(and see only the customers they added), add orders of "Networking Plans" to these customers and manage orders.
 
 By: 
-Greg Alelov
-Aviv Aharon
-Tomer Berkovich
+Greg Alelov,
+Aviv Aharon,
+Tomer Berkovich,
 Asaf Elazar
 
 ## How to run it?
