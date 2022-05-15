@@ -2,7 +2,7 @@
 
 This project is a dummy telecommunication site that is vulnerable to SQL injection and XSS attacks. This was made to demonstrate the power of those attack vector. 
 
-Users can add customers(and see only the customers they added), add orders to these customers and manage orders.
+Users can add customers(and see only the customers they added), add orders of "Networking Plans" to these customers and manage orders.
 
 By: 
 Greg Alelov
@@ -30,15 +30,16 @@ Asaf Elazar
 5. Migrate all the DBs `python manage.py makemigrations` and then `python manage.py migrate`
 
 6. Run the server: 
-- Without TLS (get the v3.0 tag): `python manage.py runserver` and go to http://127.0.0.1:8000/
-- With TLS (get the v3.1 tag): `python manage.py runsslserver --certificate cert.crt --key key.key` and go to https://127.0.0.1:8000/
+- Without TLS: `python manage.py runserver` and go to http://127.0.0.1:8000/
+- With TLS(using django-sslserver): `python manage.py runsslserver --certificate cert.crt --key key.key` and go to https://127.0.0.1:8000/
 
 ## Touble Shooting
 - If you try to reset your password and you don't see an email please check your Spam inbox.
 - After changing the pass.json conf file, you need to rerun the server inorder for the changes to apply.
 - HTTPS might take some time to reload. Be patient. 
 - If the HTTPS version doesn't load properly (Time out error), try to delete your browser cookies.
-- If you don't see plans you can make one through the db or using the admin panel in https://127.0.0.1:8000/admin
+- If you don't see 'plans' to make an order you can make one through the db or using the admin panel in https://127.0.0.1:8000/admin
+don't forget to add tags before.
 
 ## Vulenrable fields
 - To turn on the vulenrable version of the website you need to change secure = True to secure = False in views.py
