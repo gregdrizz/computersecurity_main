@@ -49,8 +49,7 @@ Use `example@gmail.com</td><script>alert("You've been hacked")</script><td>` in 
 ### SQL injection
 - http://127.0.0.1:8000/ and any other view, the vulnerable field is the 'Customer Search' bar, use '%'#' in the search bar to inject
 
-## Some Features
-(A summary of some features)
+## Features
 
 **Login Attempts Failed** - If a user fails to Login 3 times or more during 300 seconds, his user will be locked for 100 seconds
 
@@ -59,6 +58,12 @@ Use `example@gmail.com</td><script>alert("You've been hacked")</script><td>` in 
 **Password Reset** - A user can reset his password using his email, he'll get a unique url to reset his password(The user cannot use passwords he used in the past, you can edit the number of past passwords saved in the config file, pass.json)
 
 **Change Password** - Users can change their password 
+
+**Registration** - Registrator with a custom validator, which you can edit in config/pass.json
+
+**Create Customer**- Make and manage new customers, a user can view only the users he created
+
+**View customer and add orders** - U can orders to specific customers
 
 **TLS protected**- The app can be used using TLS 1.3(The certificate was generated using mkcert)
 
