@@ -21,9 +21,9 @@ Asaf Elazar
 4. In the code, go to the view.py and settings.py files and change the following sections to match your settings:
 
    ```python
-   'NAME': 'computersecurity',
+   'NAME': 'communication',
    'USER': 'root',
-   'PASSWORD': 'root',
+   'PASSWORD': '1234',
    ```
    (U can also uncomment the sqlite DATABASE credentials to use it quickly without setting up a mysql server[and get some dummy db entries])
 
