@@ -50,8 +50,7 @@ Use `example@gmail.com</td><script>alert("You've been hacked")</script><td>` in 
 - http://127.0.0.1:8000/ and any other view, the vulnerable field is the 'Customer Search' bar, use '%'#' in the search bar to inject
 
 ## Some Features
-
-You can find all the vulnerabilites in the attached PDF file on the root dir
+(A summary of some features)
 
 **Login Attempts Failed** - If a user fails to Login 3 times or more during 300 seconds, his user will be locked for 100 seconds
 
@@ -64,6 +63,7 @@ You can find all the vulnerabilites in the attached PDF file on the root dir
 **TLS protected**- The app can be used using TLS 1.3(The certificate was generated using mkcert)
 
 ## STRIDE Analysis
+You can find all the vulnerabilites in the attached PDF file on the root dir
 
 **XSS Vulenrability**- We made the some fields vulnerable to the XSS attack vector
 
