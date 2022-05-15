@@ -1,0 +1,2 @@
+class DummyCustomer(object):
+    pass

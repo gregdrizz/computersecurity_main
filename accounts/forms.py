@@ -1,26 +1,29 @@
-from django.forms import ModelForm
+from django.forms import ModelForm, ValidationError
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from .models import *
-
 
 class OrderForm(ModelForm):
     class Meta:
         model = Order
         fields = '__all__'
 
-
 class CreateCustomerForm(ModelForm):
     class Meta:
         model = Customer
-        fields = '__all__'
-
+        # fields = '__all__'
+        fields = ["name", "phone", "email"]
 
 class CreateUserForm(UserCreationForm):
     class Meta:
         model = User
         fields = ['username', 'email', 'password1', 'password2']
 
+    def clean_email(self):
+        email = self.cleaned_data["email"]
+        if User.objects.filter(email=email).exists():
+            raise ValidationError("A user with this email already exists!")
+        return email
 
 class ChangePasswordForm(UserCreationForm):
     class Meta:

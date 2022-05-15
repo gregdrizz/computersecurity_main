@@ -11,10 +11,22 @@ from django.contrib.auth import authenticate, login, logout, update_session_auth
 from django.contrib import messages
 from django_password_history.models import UserPasswordHistory
 
+from accounts.DummyCustomer import DummyCustomer
+
 from .models import *
 from .forms import *
 from .filters import OrderFilter
 from .AppUtils import *
+
+#################################
+from django.db import connection
+import mysql.connector
+from django.utils.crypto import pbkdf2
+
+# Change this in order to protect / enrisk the website
+secured = False
+
+#################################
 
 # Create your views here.
 def registerPage(request):
@@ -40,44 +52,91 @@ def registerPage(request):
     context = {'form': form}
     return render(request, 'accounts/register.html', context)
 
-
 def loginPage(request):
     if request.user.is_authenticated:
         return redirect('home')
-
-    if request.method == 'POST':
+    else:
         username = request.POST.get('username')
         password = request.POST.get('password')
 
-        # Lock users:
-        failed_attempts_count = None
-        if User.objects.filter(username=username).exists():
-            user = User.objects.filter(username=username).last()
-            min_lock_time = timezone.now() - timedelta(seconds=settings.LOGIN_FAILURE_COUNTING_DURATION)
-            failed_attempts_count = user.failed_login_attempts.filter(time__gte=min_lock_time).count()
-            if failed_attempts_count > settings.LOGIN_MAX_RETRIES:
-                messages.error(request, 'This user is locked due to 3 failed login attempts.')
-                return render(request, 'accounts/login.html', {})
+        if secured==False:
+            if username != None and password != None:
+                #TODO: change credentials of db here to presentation's db
+                conn = mysql.connector.connect(host = "127.0.0.1", user="root", password = "1234", database = "communication")
+                cursor = conn.cursor()
+                # with connection.cursor() as cursor:
 
-        user = authenticate(request, username=username, password=password)
+                """
+                Scenario in order to exploit this:
+                1. Hacker creates a new user directly in the db (malicious username input: " or "1" = "1"; INSERT INTO auth_user values("sha1$1$<selected salt>$<hash match to password and selected salt>" <last_login>, <is_superuser>, <username>, <last_name>, <email>, <is_staff>, <is_active>, <date_joined>, "hacker");#
+                   In that situation he knows the salt, because he creates it on its own.
+                2. The hacker then connects to the system with his fake user.
+                """
 
-        if user is not None:
-            login(request, user)
-            return redirect('home')
+                query = f"SELECT password FROM auth_user WHERE username=\"{username}\""
+
+                row = None
+
+                first = True
+
+                for result in cursor.execute(query, multi=True):
+                    if result.with_rows:
+                        print("Rows produced by statement '{}':".format(result.statement))
+                        fetched = result.fetchall()
+                        print(fetched)
+
+                        if first:
+                            row = fetched[0]
+                            first = False
+                    else:
+                        print("Number of rows affected by statement '{}': {}".format(result.statement, result.rowcount))
+
+                # row = [result.fetchone() for result in cursor.execute(query, multi=True)]
+                # cursor.execute(query, multi=True)
+                # row = cursor.fetchone()[0]
+                row = row[0]
+                passwordDbParts    = row.split("$", maxsplit = 3)
+                encryptionType     = passwordDbParts[0]
+                numberOfIterations = passwordDbParts[1]
+                salt               = passwordDbParts[2]
+                expectedHash       = passwordDbParts[3]
+                encryptionType = eval("hashlib." + encryptionType.replace("pbkdf2_", ""))
+                hash = pbkdf2(password, salt, int(numberOfIterations), digest=encryptionType)
+                hash = base64.b64encode(hash).decode('ascii').strip()
+                if (hash == expectedHash):
+                    user = authenticate(request, username = username, password = password)
+                    login(request, user)
+                    return redirect('home')
         else:
-            if User.objects.filter(username=username).exists():
-                user = User.objects.filter(username=username).last()
-                FailedLoginAttempt.create_record(user)
-                if failed_attempts_count:
-                    messages.error(request, f'Wrong Password ({failed_attempts_count}/{settings.LOGIN_MAX_RETRIES})')
+            if request.method == 'POST':
+                # Lock users:
+                failed_attempts_count = None
+                if User.objects.filter(username=username).exists():
+                    user = User.objects.filter(username=username).last()
+                    min_lock_time = timezone.now() - timedelta(seconds=settings.LOGIN_FAILURE_COUNTING_DURATION)
+                    failed_attempts_count = user.failed_login_attempts.filter(time__gte=min_lock_time).count()
+                    if failed_attempts_count > settings.LOGIN_MAX_RETRIES:
+                        messages.error(request, 'This user is locked due to 3 failed login attempts.')
+                        return render(request, 'accounts/login.html', {})
+        
+                user = authenticate(request, username=username, password=password)
+        
+                if user is not None:
+                    login(request, user)
+                    return redirect('home')
                 else:
-                    messages.error(request, 'Wrong Password')
+                    if User.objects.filter(username=username).exists():
+                        user = User.objects.filter(username=username).last()
+                        FailedLoginAttempt.create_record(user)
+                        if failed_attempts_count:
+                            messages.error(request, f'Wrong Password ({failed_attempts_count}/{settings.LOGIN_MAX_RETRIES})')
+                        else:
+                            messages.error(request, 'Wrong Password')
+                    else:
+                        messages.error(request, "User doesn't exist")
 
-            else:
-                messages.error(request, "User doesn't exist")
-
-    context = {}
-    return render(request, 'accounts/login.html', context)
+        context = {}
+        return render(request, 'accounts/login.html', context)
 
 @login_required(login_url='login')
 def change_password_page(request):
@@ -123,19 +182,62 @@ def logoutUser(request):
 @login_required(login_url='login')
 def home(request):
     orders = Order.objects.all()
-    customers = Customer.objects.all()
+    customers = None
+    patternToSearch = request.POST.get("search-bar")
 
-    total_customers = customers.count()
+    if patternToSearch == None:
+        customers = Customer.objects.filter(creator_id = request.user.id)
+    else:
+        current_user = request.user
+
+        if secured == False: 
+            if patternToSearch != None:
+                # To exploit this input field, enter "%'#" in the search bar (without the quotes)
+                sql = f"SELECT * FROM accounts_customer WHERE name LIKE '%{patternToSearch}%' AND creator_id = {current_user.id};"
+
+            try:
+                #TODO: change credentials of db here to presentation's db
+                conn = mysql.connector.connect(host = "127.0.0.1", user="root", password = "1234", database = "communication")
+                cursor = conn.cursor()
+                customers = []
+
+                # Allows multi query, this way we can use UNION in our SQL Injection
+                iterable = cursor.execute(sql, multi=True)
+                iterable = cursor.fetchall()
+                for result in iterable:
+                    # currentResult = result.fetchall()
+                    currentResult = result
+
+                    # currentCustomer = Customer()
+                    currentCustomer = DummyCustomer()
+
+                    currentCustomer.id    = currentResult[0]
+                    currentCustomer.name  = currentResult[1]
+                    currentCustomer.phone = currentResult[2]
+                    currentCustomer.email = currentResult[3]
+                    currentCustomer.date_created = currentResult[4]
+                    currentCustomer.creator_id = currentResult[5]
+
+                    customers.append(currentCustomer)
+
+            except Exception as e:
+                print(e)
+        
+        # NOTE: This solution already handles the trying of sqli with parameters
+        else:
+            customers = Customer.objects.filter(creator_id = current_user.id)
+            customers = [customer for customer in customers if patternToSearch in customer.name]
+
+    total_customers = len(customers)
     total_orders = orders.count()
     connected = orders.filter(status='Connected').count()
     pending = orders.filter(status='Pending').count()
 
     context = {'orders': orders, 'customers': customers, 
     'total_customers': total_customers, 'total_orders': total_orders,
-    'connected': connected, 'pending': pending }
+    'connected': connected, 'pending': pending, "secured" : secured }
 
     return render(request, 'accounts/dashboard.html', context)
-
 
 @login_required(login_url='login')
 def networkplans(request):
@@ -199,10 +301,17 @@ def create_customer(request):
     form = CreateCustomerForm()
 
     if request.method == 'POST':
-        #print('Printing POST', request.POST)
         form = CreateCustomerForm(request.POST)
         if form.is_valid():
+            userId = request.user.id
+            customerName = form.cleaned_data["name"]
+            print(customerName)
             form.save()
+
+            customersToSet = Customer.objects.get(name=customerName)
+            customersToSet.creator_id = userId
+            customersToSet.save()
+
             return redirect('/')
 
     context = {'form': form}

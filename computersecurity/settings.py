@@ -94,8 +94,12 @@ WSGI_APPLICATION = 'computersecurity.wsgi.application'
 
 # DATABASES = {
 #     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
+#         'ENGINE': 'django.db.backends.mysql',
+#         'NAME': "django_db",
+#         'HOST': "127.0.0.1",
+#         'PORT': "3306",
+#         'USER': "root",
+#         'PASSWORD': "1234",
 #     }
 # }
 
@@ -183,4 +187,3 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'communicationgaba1@gmail.com'
 EMAIL_HOST_PASSWORD = '12345!@#$%'
-
